@@ -49,6 +49,16 @@ EXAMPLES:
 EOF
 }
 
+date_time()
+{
+  date +%Y-%m-%d" "%H:%M:%S
+}
+
+now()
+{
+  date +%s
+}
+
 # Defaults
 ELASTICSEARCH="http://localhost:9200"
 KEEP=14
@@ -116,8 +126,12 @@ if [ ${#INDEX[@]} -gt $KEEP ]; then
       if [ -z "$LOGFILE" ]; then
         curl -s -XDELETE "$ELASTICSEARCH/$index/" > /dev/null
       else
-        echo `date "+[%Y-%m-%d %H:%M] "`" Deleting index: $index." >> $LOGFILE
-        curl -s -XDELETE "$ELASTICSEARCH/$index/" >> $LOGFILE
+        start=$(now)
+        echo "$(date_time) Deleting index: $index" >> $LOGFILE
+        JSON_RESPONSE=$(curl -s -XDELETE "$ELASTICSEARCH/$index/")
+        let "duration = $(now) - start"
+        echo "$(date_time) JSON response: $JSON_RESPONSE" >> $LOGFILE
+        echo "$(date_time) Delete done in $duration seconds" >> $LOGFILE
       fi
     fi
   done
